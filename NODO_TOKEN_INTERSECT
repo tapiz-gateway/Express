@@ -1,0 +1,11 @@
+[NODO_TOKEN_INTERSECT]
+
+Entradas:
+  U_perm
+  A_perm
+
+Proceso:
+  T(i,j) = interseccion(U, A)
+
+Salida:
+  Token_valido
