@@ -1,0 +1,11 @@
+[ERRORES]
+
+incorrect_client_credentials -> abortar nodo IDENTIDAD_BASE
+
+redirect_uri_mismatch -> romper flujo AUTORIZACION
+
+expired_token -> redirigir a REFRESH_FLOW
+
+slow_down -> insertar delay nodo TIEMPO
+
+authorization_pending -> mantener loop en INTERCAMBIO_CODE
