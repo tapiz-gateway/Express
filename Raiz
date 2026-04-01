@@ -1,0 +1,7 @@
+[RAIZ]
+
+loop:
+  evaluar(IDENTIDAD_BASE)
+  ejecutar(GITHUB_AUTH_SUBGRAFO)
+  validar(TOKEN)
+  actualizar(ESTADO_GLOBAL)
