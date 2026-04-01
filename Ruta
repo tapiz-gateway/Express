@@ -1,0 +1,25 @@
+/cerebro/grafo/github_auth.dag
+
+tipo: subgrafo
+nombre: github_auth
+
+nodos:
+  - solicitud
+  - autorizacion
+  - codigo
+  - intercambio
+  - token_intersect
+  - expiracion
+  - refresh
+  - uso_api
+  - validacion
+
+reglas:
+  token = interseccion(usuario, app)
+  validez = tiempo && permisos
+  refresh si expirado
+
+errores:
+  expired_token -> refresh
+  invalid_client -> abort
+  pending -> retry
