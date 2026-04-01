@@ -1,0 +1,10 @@
+[CEREBRO -> GITHUB_SUBGRAFO]
+
+Entrada cerebro:
+  - contexto_identidad
+  - estado_permiso
+  - tiempo_actual
+
+Salida cerebro:
+  - decision_validez(token)
+  - prioridad_uso
