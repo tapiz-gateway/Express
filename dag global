@@ -1,26 +1,37 @@
-[DAG_GLOBAL]
-
-        (INPUT)
-           |
-           v
-   +----------------+
-   | IDENTIDAD_BASE |
-   +--------+-------+
-            |
-            v
-   +----------------------+
-   | GITHUB_AUTH_SUBGRAFO |
-   +--------+-------------+
-            |
-            v
-   +------------------+
-   | VALIDACION_TOTAL |
-   +--------+---------+
-            |
-            v
-   +------------------+
-   | ASIGNACION_TAPIZ |
-   +--------+---------+
-            |
-            v
-        (OUTPUT)
+(INPUT)
+               |
+               v
+     +----------------------+
+     |  IDENTIDAD_BASE      |
+     | (invariante I)      |
+     +----------+-----------+
+                |
+                v
+     +----------------------+
+     | GITHUB_AUTH_SUBGRAFO |
+     | (estado + ciclo)     |
+     |                      |
+     |  U → CODE → TOKEN    |
+     |       ↘     ↗        |
+     |     REFRESH/EXP      |
+     +----------+-----------+
+                |
+                v
+     +----------------------+
+     | VALIDACION_PARCIAL   |
+     | (coherencia local)   |
+     +----------+-----------+
+                |
+                v
+     +----------------------+
+     | ASIGNACION_TAPIZ     |
+     | (actualiza H, K, Φ)  |
+     +----------+-----------+
+                |
+                v
+            (OUTPUT)
+                |
+                v
+            (FEEDBACK)
+                |
+                └───────────────→ IDENTIDAD_BASE
