@@ -1,10 +1,23 @@
-[CEREBRO -> GITHUB_SUBGRAFO]
+BRAIN:
 
-Entrada cerebro:
-  - contexto_identidad
-  - estado_permiso
-  - tiempo_actual
+perception:
+  input:
+    - contexto_identidad
+    - estado_permiso
+    - tiempo_actual
 
-Salida cerebro:
-  - decision_validez(token)
-  - prioridad_uso
+state:
+  latent:
+    - memoria_estados
+    - dinamica_K
+    - historial_phi
+
+reasoning:
+  compute:
+    - embedding_estado
+    - coherencia_permiso
+    - estabilidad_temporal
+
+output:
+  decision_validez_token
+  prioridad_uso
