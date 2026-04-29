@@ -1,11 +1,28 @@
 [NODO_TOKEN_INTERSECT]
 
 Entradas:
-  U_perm
-  A_perm
+  U_perm_set   (claims del usuario)
+  A_perm_set   (claims de la aplicación)
+
+Espacio:
+  P = conjunto universal de permisos normalizados
 
 Proceso:
-  T(i,j) = interseccion(U, A)
+  U = normalizar(U_perm_set) ⊆ P
+  A = normalizar(A_perm_set) ⊆ P
+
+  compatibilidad = U ∩ A
+
+  score_validacion = |compatibilidad| / max(|A|, 1)
+
+Condición:
+  si score_validacion ≥ τ:
+      estado = VALIDO
+  si no:
+      estado = INVALIDO
 
 Salida:
-  Token_valido
+  Token:
+    estado
+    compatibilidad
+    score_validacion
