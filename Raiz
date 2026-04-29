@@ -1,7 +1,17 @@
-[RAIZ]
+RAIZ:
 
-loop:
-  evaluar(IDENTIDAD_BASE)
-  ejecutar(GITHUB_AUTH_SUBGRAFO)
-  validar(TOKEN)
-  actualizar(ESTADO_GLOBAL)
+identity:
+  evaluate: IDENTIDAD_BASE
+
+control:
+  loop:
+    - evaluate_state
+    - compute_transition
+
+auth:
+  validate: TOKEN
+  external: GITHUB_AUTH_SUBGRAFO
+
+state:
+  read: ESTADO_GLOBAL
+  write: ESTADO_GLOBAL
