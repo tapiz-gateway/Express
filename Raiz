@@ -1,17 +1,38 @@
 RAIZ:
 
 identity:
-  evaluate: IDENTIDAD_BASE
+  invariant:
+    - IDENTIDAD_BASE
+  role: static_reference
+  effect: stabilizes_system_geometry
 
 control:
-  loop:
-    - evaluate_state
-    - compute_transition
+  scheduler:
+    type: iterative_dynamics
+    cycle:
+      - evaluate_state
+      - compute_transition
+    output: next_state_candidate
 
 auth:
-  validate: TOKEN
-  external: GITHUB_AUTH_SUBGRAFO
+  interface:
+    validate: TOKEN
+    source: GITHUB_AUTH_SUBGRAFO
+    mode: external_verification
+    effect: constraints_on_execution
 
 state:
-  read: ESTADO_GLOBAL
-  write: ESTADO_GLOBAL
+  storage:
+    read: ESTADO_GLOBAL
+    write: ESTADO_GLOBAL
+    type: persistent_dynamic_memory
+
+coupling_rules:
+  identity → control: modulates_transition_space
+  auth → control: restricts_valid_paths
+  state → control: defines_current_position
+
+execution_semantics:
+  RAIZ := function(identity, state, auth):
+    loop:
+      state ← control(state, identity, auth)
