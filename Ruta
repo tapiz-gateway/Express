@@ -3,23 +3,61 @@
 tipo: subgrafo
 nombre: github_auth
 
-nodos:
-  - solicitud
-  - autorizacion
-  - codigo
-  - intercambio
-  - token_intersect
-  - expiracion
-  - refresh
-  - uso_api
-  - validacion
+estructura:
 
-reglas:
-  token = interseccion(usuario, app)
-  validez = tiempo && permisos
-  refresh si expirado
+  nodos:
+    - solicitud
+    - autorizacion
+    - codigo
+    - intercambio
+    - token_intersect
+    - expiracion
+    - refresh
+    - uso_api
+    - validacion
 
-errores:
-  expired_token -> refresh
-  invalid_client -> abort
-  pending -> retry
+  aristas:
+    solicitud → autorizacion
+    autorizacion → codigo
+    codigo → intercambio
+    intercambio → token_intersect
+    token_intersect → uso_api
+    token_intersect → expiracion
+    expiracion → refresh
+    refresh → intercambio
+    uso_api → validacion
+
+semantica:
+
+  token_intersect:
+    definicion: U ∩ A
+    interpretacion: compatibilidad de permisos entre usuario y aplicacion
+
+  validacion:
+    condicion:
+      - permisos_validos == true
+      - tiempo_activo == true
+
+  expiracion:
+    condicion:
+      tiempo_activo == false
+
+reglas_dinamicas:
+
+  refresh:
+    trigger: expiracion == true
+    accion: reiniciar flujo desde intercambio
+
+  uso_api:
+    habilitacion: token_intersect valido
+
+politicas_error:
+
+  expired_token:
+    accion: refresh
+
+  invalid_client:
+    accion: abortar_flujo
+
+  pending:
+    accion: retry_exponencial
