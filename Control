@@ -1,11 +1,62 @@
-[ERRORES]
+ERROR_SYSTEM:
 
-incorrect_client_credentials -> abortar nodo IDENTIDAD_BASE
+classifier:
+  incorrect_client_credentials: AUTHENTICATION_FAILURE
+  redirect_uri_mismatch: CONFIGURATION_ERROR
+  expired_token: TEMPORAL_EXPIRATION
+  slow_down: RATE_LIMIT
+  authorization_pending: ASYNC_WAIT
 
-redirect_uri_mismatch -> romper flujo AUTORIZACION
+mapping_to_tapiz:
 
-expired_token -> redirigir a REFRESH_FLOW
+  AUTHENTICATION_FAILURE:
+    affects: IDENTIDAD_BASE
+    type: structural_constraint
+    severity: HIGH
 
-slow_down -> insertar delay nodo TIEMPO
+  CONFIGURATION_ERROR:
+    affects: AUTORIZACION
+    type: structural_break
+    severity: HIGH
 
-authorization_pending -> mantener loop en INTERCAMBIO_CODE
+  TEMPORAL_EXPIRATION:
+    affects: REFRESH_FLOW
+    type: temporal_shift
+    severity: MEDIUM
+
+  RATE_LIMIT:
+    affects: TIEMPO
+    type: density_control
+    severity: LOW
+
+  ASYNC_WAIT:
+    affects: INTERCAMBIO_CODE
+    type: meta_stable_state
+    severity: NEUTRAL
+
+dynamics:
+
+  HIGH:
+    - reinforce_K_constraints
+    - reduce_H_entropy
+    - partially_reset_flow
+
+  MEDIUM:
+    - trigger_phi_rebalance
+    - activate_refresh_transition
+
+  LOW:
+    - insert_time_delay
+    - smooth_K_gradient
+
+  NEUTRAL:
+    - maintain_loop_state
+    - monitor_asynchronous_flow
+
+feedback_loop:
+
+  update_rules:
+    - error modifies K
+    - K modifies H
+    - H modifies Phi
+    - Phi modulates error_sensitivity
