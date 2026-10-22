@@ -1,36 +1,232 @@
-# This is a basic workflow to help you get started with Actions
+name: TAPIZ - Observacion
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches: ["main"]
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+permissions:
+  contents: read
+
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  observacion:
+    name: Observacion estatica de Tapiz
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Obtener repositorio
+        uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Identificar entorno
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          set -eu
+
+          echo "TAPIZ - OBSERVACION"
+          echo "===================="
+          echo "Modo: lectura y analisis estatico"
+          echo "Ejecucion del proyecto: NO"
+          echo "Instalacion de dependencias: NO"
+          echo "Modificacion del repositorio: NO"
+          echo
+
+          echo "Rama o referencia:"
+          printf '%s\n' "${GITHUB_REF:-no disponible}"
+
+          echo
+          echo "Directorio de trabajo:"
+          printf '%s\n' "$GITHUB_WORKSPACE"
+
+      - name: Inventario de archivos
+        run: |
+          set -eu
+
+          echo "INVENTARIO"
+          echo "=========="
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          raiz = Path(".")
+          ignorar = {".git", "__pycache__", ".venv", "venv"}
+
+          archivos = []
+
+          for p in raiz.rglob("*"):
+              if not p.is_file():
+                  continue
+
+              if any(parte in ignorar for parte in p.parts):
+                  continue
+
+              archivos.append(p)
+
+          archivos.sort(key=lambda p: str(p))
+
+          print("Archivos encontrados:", len(archivos))
+
+          for p in archivos:
+              print(p.as_posix())
+          PY
+
+      - name: Observar archivos del proyecto
+        run: |
+          set -eu
+
+          echo "OBSERVACION DE ARCHIVOS"
+          echo "======================="
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import hashlib
+
+          candidatos = (
+              "vendedor_real.py",
+              "tapiz_node.py",
+              "tapiz_chain.json",
+              "tapiz_wallets.json",
+          )
+
+          for nombre in candidatos:
+              p = Path(nombre)
+
+              if not p.exists():
+                  print(f"AUSENTE: {nombre}")
+                  continue
+
+              if not p.is_file():
+                  print(f"NO ES ARCHIVO: {nombre}")
+                  continue
+
+              try:
+                  contenido = p.read_bytes()
+              except OSError as error:
+                  print(f"NO LEGIBLE: {nombre}: {error}")
+                  continue
+
+              huella = hashlib.sha256(contenido).hexdigest()
+
+              print(f"ARCHIVO: {nombre}")
+              print(f"TAMANO: {len(contenido)} bytes")
+              print(f"SHA256: {huella}")
+          PY
+
+      - name: Analizar sintaxis Python
+        run: |
+          set -eu
+
+          echo "ANALISIS SINTACTICO"
+          echo "==================="
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import ast
+          import sys
+
+          ignorar = {".git", "__pycache__", ".venv", "venv"}
+
+          archivos = sorted(
+              p for p in Path(".").rglob("*.py")
+              if p.is_file()
+              and not any(parte in ignorar for parte in p.parts)
+          )
+
+          if not archivos:
+              print("RESULTADO: NO OBSERVADO")
+              print("Motivo: no se encontraron archivos Python.")
+              sys.exit(0)
+
+          errores = 0
+
+          for archivo in archivos:
+              try:
+                  texto = archivo.read_bytes().decode("utf-8")
+              except (OSError, UnicodeDecodeError) as error:
+                  print(f"NO ANALIZADO: {archivo}: {error}")
+                  errores += 1
+                  continue
+
+              try:
+                  ast.parse(texto, filename=str(archivo))
+              except SyntaxError as error:
+                  print(
+                      f"ERROR SINTACTICO: {archivo}:"
+                      f"{error.lineno}:{error.offset}: {error.msg}"
+                  )
+                  errores += 1
+              else:
+                  print(f"SINTAXIS CORRECTA: {archivo}")
+
+          print()
+          print("ARCHIVOS ANALIZADOS:", len(archivos))
+          print("ERRORES:", errores)
+
+          if errores:
+              print("RESULTADO: ERROR DE ANALISIS")
+              sys.exit(1)
+
+          print("RESULTADO: SINTAXIS CORRECTA")
+          print("Nota: no demuestra correccion matematica ni seguridad.")
+          PY
+
+      - name: Verificar estructura JSON
+        run: |
+          set -eu
+
+          echo "ANALISIS JSON"
+          echo "============="
+
+          python3 - <<'PY'
+          from pathlib import Path
+          import json
+          import sys
+
+          ignorar = {".git", "__pycache__", ".venv", "venv"}
+
+          archivos = sorted(
+              p for p in Path(".").rglob("*.json")
+              if p.is_file()
+              and not any(parte in ignorar for parte in p.parts)
+          )
+
+          if not archivos:
+              print("RESULTADO: NO OBSERVADO")
+              print("Motivo: no se encontraron archivos JSON.")
+              sys.exit(0)
+
+          errores = 0
+
+          for archivo in archivos:
+              try:
+                  with archivo.open("r", encoding="utf-8") as f:
+                      json.load(f)
+              except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+                  print(f"JSON INVALIDO: {archivo}: {error}")
+                  errores += 1
+              else:
+                  print(f"JSON VALIDO: {archivo}")
+
+          print()
+          print("ARCHIVOS ANALIZADOS:", len(archivos))
+          print("ERRORES:", errores)
+
+          if errores:
+              print("RESULTADO: ERROR DE ESTRUCTURA JSON")
+              sys.exit(1)
+
+          print("RESULTADO: ESTRUCTURA JSON CORRECTA")
+          print("Nota: no demuestra integridad de una cadena.")
+          PY
+
+      - name: Resultado de la observacion
+        if: always()
+        run: |
+          echo "TAPIZ - FIN DE OBSERVACION"
+          echo "=========================="
+          echo "Se han realizado comprobaciones estaticas."
+          echo "No se ha ejecutado vendedor_real.py."
+          echo "No se ha ejecutado el codigo Python del repositorio."
+          echo "No se ha verificado la correccion matematica."
+          echo "No se ha verificado la integridad de una cadena."
+          echo "Consultar el resultado de cada paso para conocer su estado."
